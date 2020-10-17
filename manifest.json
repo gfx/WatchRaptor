@@ -1,0 +1,17 @@
+{
+  "name": "Octoracker",
+  "version": "1.0.0",
+
+  "description": "GitHub Notification Tracker",
+  "icons": {},
+  "author": "FUJI Goro",
+  "background": {
+    "persistent": false,
+    "page": "background.html"
+  },
+  "permissions": [
+    "alarms",
+    "notifications"
+  ],
+  "manifest_version": 2
+}

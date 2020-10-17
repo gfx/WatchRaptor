@@ -1,0 +1,21 @@
+{
+  "name": "@octoracker/octoracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub notification tracker",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && cp -r assets manifest.json *.html dist/",
+    "build:watch" : "npm run build && tsc --watch",
+    "test": "tsc --noEmit"
+  },
+  "author": "FUJI Goro",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^7.24.0",
+    "typescript": "^4.0.3"
+  },
+  "devDependencies": {
+    "web-ext-types": "^3.2.1"
+  }
+}

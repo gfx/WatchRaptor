@@ -1,0 +1,1 @@
+var chrome: typeof browser;
