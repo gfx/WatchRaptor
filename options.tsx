@@ -1,22 +1,18 @@
 import * as firebase from "firebase/app";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { graphql } from "@octokit/graphql";
-
 import "firebase/auth";
-import { ready } from "./src/ready";
+
 import { firebaseConfig } from "./firebaseConfig";
+import { ready } from "./src/ready";
+import { loadUserState, saveUserState, UserState } from "./src/UserState";
 
 const onSigninWithGitHubSubmit = () => {
   const provider = new firebase.auth.GithubAuthProvider();
   provider.addScope("notifications");
   firebase.auth().signInWithRedirect(provider);
 }
-
-type User = {
-  name: string;
-  avatarUrl: string;
-};
 
 const tryToGetGitHubUser = async (accessToken: string) => {
   const query = `
@@ -39,12 +35,6 @@ const tryToGetGitHubUser = async (accessToken: string) => {
     return [undefined, error];
   }
 };
-
-type UserState = {
-  accessToken: string;
-  userName: string;
-  userAvatarUrl: string;
-}
 
 type OptionsMainProps = {
   accessToken: string,
@@ -143,24 +133,13 @@ const OptionsApp: React.FC = () => {
   const [userAvatarUrl, setUserAvatarUrl] = useState("");
 
   useEffect(() => {
-    (chrome.storage.local.get as any)([
-      "accessToken",
-      "userName",
-      "userAvatarUrl",
-    ], (data: any) => {
-      if (data.accessToken != null) {
-        setAccessToken(data.accessToken);
-      }
-      if (data.userName != null) {
-        setUserName(data.userName);
-      }
-      if (data.userAvatarUrl) {
-        setUserAvatarUrl(data.userAvatarUrl);
-      }
-
+    (async () => {
+      const userState = await loadUserState();
+      setUserName(userState.userName);
+      setUserAvatarUrl(userState.userAvatarUrl);
+      setAccessToken(userState.accessToken);
       setInitialized(true);
-    });
-
+    })();
   });
 
   if (initialized) {
@@ -169,7 +148,7 @@ const OptionsApp: React.FC = () => {
       userName={userName}
       userAvatarUrl={userAvatarUrl}
       onUserStateSet={async (userState) => {
-        await chrome.storage.local.set(userState);
+        await saveUserState(userState);
 
         setAccessToken(userState.accessToken);
         setUserName(userState.userName);
@@ -189,9 +168,9 @@ ready(async () => {
     if (result.credential) {
       const credential = result.credential as firebase.auth.OAuthCredential;
       const accessToken = credential.accessToken;
-      chrome.storage.local.set({ accessToken }).then(() => {
-        console.log("Successfully sign-in as:", result);
-      });
+
+      console.log("Successfully sign-in as:", result);
+      // FIXME: build UserState and save it
     }
   } catch (error) {
     // FIXME: handle errors

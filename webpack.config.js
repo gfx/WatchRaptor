@@ -2,7 +2,8 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const _  = require("lodash");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const _ = require("lodash");
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
@@ -33,6 +34,14 @@ const configTemplate = {
   plugins: [
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify(nodeEnv),
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "./public",
+          to: "./",
+        },
+      ]
     }),
   ],
 
