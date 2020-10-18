@@ -1,4 +1,4 @@
-import { updateNotifications } from "./src/updateNotifications.js";
+import { updateNotifications } from "./src/updateNotifications";
 
 chrome.runtime.onInstalled.addListener(() => {
   (async () => {

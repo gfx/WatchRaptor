@@ -3,14 +3,20 @@
   "version": "1.0.0",
 
   "description": "GitHub Notification Tracker",
-  "icons": {},
   "author": "FUJI Goro",
+
+  "icons": {},
   "background": {
     "persistent": false,
     "page": "background.html"
   },
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
   "permissions": [
     "alarms",
+    "storage",
     "notifications"
   ],
   "manifest_version": 2
