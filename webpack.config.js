@@ -3,16 +3,19 @@
 const path = require("path");
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const _ = require("lodash");
 
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
-const configTemplate = {
+module.exports = {
   mode: "production",
 
-  entry: undefined, // will be set later
+  entry: {
+    background: "./background.ts",
+    options: "./options.tsx",
+    popup: "./popup.tsx",
+  },
   output: {
-    filename: undefined, // will be set later
+    filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
   },
   target: ["web", "es2020"],
@@ -54,22 +57,3 @@ const configTemplate = {
   },
 };
 
-module.exports = [
-  ((config) => {
-    config.entry = "./background.ts"
-    config.output.filename = "background.js";
-    return config;
-  })(_.cloneDeep(configTemplate)),
-
-  ((config) => {
-    config.entry = "./options.tsx"
-    config.output.filename = "options.js";
-    return config;
-  })(_.cloneDeep(configTemplate)),
-
-  ((config) => {
-    config.entry = "./popup.tsx"
-    config.output.filename = "popup.js";
-    return config;
-  })(_.cloneDeep(configTemplate)),
-];
