@@ -1,23 +1,26 @@
 {
-  "name": "Octoracker",
-  "version": "1.0.0",
+  "manifest_version": 3,
+  "name": "WatchRaptor",
+  "version": "0.9.0",
 
-  "description": "GitHub Notification Tracker",
+  "description": "Notify if a specified status check of GitHub PRs is completed",
   "author": "FUJI Goro",
 
   "icons": {},
   "background": {
-    "persistent": false,
-    "page": "background.html"
+    "service_worker": "background.js"
   },
   "browser_action": {
     "default_popup": "popup.html"
   },
   "options_page": "options.html",
+  "host_permissions": [
+    "https://github.com/"
+  ],
   "permissions": [
+    "scripting",
     "alarms",
     "storage",
     "notifications"
-  ],
-  "manifest_version": 2
+  ]
 }

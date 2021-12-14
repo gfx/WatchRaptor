@@ -4,15 +4,12 @@ const path = require("path");
 const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-const nodeEnv = process.env.NODE_ENV ?? "development";
-
 module.exports = {
-  mode: "production",
-
   entry: {
-    background: "./background.ts",
-    options: "./options.tsx",
-    popup: "./popup.tsx",
+    background: "./background",
+    options: "./options",
+    popup: "./popup",
+    injected: "./injected",
   },
   output: {
     filename: "[name].js",
@@ -36,7 +33,6 @@ module.exports = {
 
   plugins: [
     new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify(nodeEnv),
     }),
     new CopyWebpackPlugin({
       patterns: [
@@ -55,5 +51,6 @@ module.exports = {
   performance: {
     hints: false,
   },
+  devtool: 'inline-cheap-module-source-map',
 };
 

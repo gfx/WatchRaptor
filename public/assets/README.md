@@ -1,5 +1,7 @@
-## fish_takotsubo.png
+## `velociraptor.png`
 
-From Irasutoya:
+https://www.flaticon.com/free-icon/velociraptor_1494128
 
-https://www.irasutoya.com/2016/12/blog-post_98.html
+## `velociraptor_monocolor.png`
+
+https://www.flaticon.com/free-icon/velociraptor_1494054
