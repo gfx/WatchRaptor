@@ -21,6 +21,7 @@
     "scripting",
     "alarms",
     "storage",
+    "webNavigation",
     "notifications"
   ]
 }

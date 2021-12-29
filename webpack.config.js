@@ -6,10 +6,11 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: {
-    background: "./background",
-    options: "./options",
-    popup: "./popup",
-    injected: "./injected",
+    background: "./src/background",
+    watcher: "./src/watcher",
+
+    options: "./src/options",
+    popup: "./src/popup",
   },
   output: {
     filename: "[name].js",
