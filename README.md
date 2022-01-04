@@ -1,6 +1,6 @@
-# Octoracker
+# WatchRaptor
 
-Octoracker is a Chrome extension to track GitHub notifications.
+WatchRaptor is a Chrome extension to watch GitHub CI statuses.
 
 ## Features
 
