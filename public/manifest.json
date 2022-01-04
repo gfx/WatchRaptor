@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "WatchRaptor",
+  "version": "0.9.0",
+
+  "description": "Notify if a specified status check of GitHub PRs is completed",
+  "author": "FUJI Goro",
+
+  "icons": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "host_permissions": [
+    "https://github.com/"
+  ],
+  "permissions": [
+    "scripting",
+    "alarms",
+    "storage",
+    "webNavigation",
+    "notifications"
+  ]
+}
