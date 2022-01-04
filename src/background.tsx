@@ -107,8 +107,11 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   }
 });
 
-chrome.notifications.onClicked.addListener((id) => {
+chrome.notifications.onClicked.addListener(async (id) => {
   const [, tabId] = id.split("-");
-  chrome.tabs.update(Number.parseInt(tabId), { active: true });
+  await chrome.tabs.update(Number.parseInt(tabId), { active: true });
+  await chrome.windows.update(chrome.windows.WINDOW_ID_CURRENT, {
+    focused: true,
+  });
   chrome.notifications.clear(id);
 });
