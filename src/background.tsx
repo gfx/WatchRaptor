@@ -99,8 +99,8 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     const notificationId = `notification-${tabId}`;
     chrome.notifications.create(notificationId, {
       type: "basic",
-      title: `${sym} ${message.title}`,
-      message: message.statusMessage,
+      title: `${sym} ${message.statusMessage}`,
+      message: message.documentTitle,
       iconUrl: appIconUri,
       requireInteraction: true,
     });

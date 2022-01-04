@@ -39,7 +39,7 @@ const notifyStatusChange = async (statusIcon: Element) => {
 
   chrome.runtime.sendMessage({
     type: "ci-status-changed",
-    title: document.title,
+    documentTitle: document.title,
     statusMessage,
     status,
   });
