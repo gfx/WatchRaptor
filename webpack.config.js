@@ -39,14 +39,14 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
     }),
-    // new CopyWebpackPlugin({
-    //   patterns: [
-    //     {
-    //       from: "./public",
-    //       to: "./",
-    //     },
-    //   ]
-    // }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "./public",
+          to: "./",
+        },
+      ]
+    }),
   ],
 
   optimization: {

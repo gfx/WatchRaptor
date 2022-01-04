@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 
-import { info, warn } from "./log";
+import { debug, info, warn } from "./log";
 
 type StatusType = "unknown" | "pending" | "success" | "fail";
 
@@ -68,12 +68,15 @@ const handleStatusIconChange = () => {
   for (const [statusItemQuery, oldStatus] of registry) {
     const statusItem = queryItem(document, statusItemQuery);
     if (statusItem) {
-      const statusIcon = statusItem.querySelector(".merge-status-icon")!;
-      const newStatus = getStatus(statusIcon);
-      info(`${statusItemQuery}: ${oldStatus} -> ${newStatus}`);
-      if (oldStatus !== newStatus) {
+      const statusIcon = statusItem.querySelector(".merge-status-icon");
+      if (statusIcon) {
+        const newStatus = getStatus(statusIcon);
         registry.set(statusItemQuery, newStatus);
-        notifyStatusChange(statusIcon);
+
+        if (oldStatus !== newStatus && newStatus !== "pending") {
+          debug(`${statusItemQuery}: ${oldStatus} -> ${newStatus}`);
+          notifyStatusChange(statusIcon);
+        }
       }
     }
   }
@@ -88,7 +91,7 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
   statusItemQuery,
   statusIcon,
 }) => {
-  const [checked, setChecked] = useState(true);
+  const [checked, setChecked] = useState(registry.has(statusItemQuery));
   const status = getStatus(statusIcon);
 
   const register = (checked: boolean) => {
@@ -179,7 +182,7 @@ const main = (): void => {
 
   // The pull-request tab is being rendered.
   const observer = new MutationObserver((mutations) => {
-    info("registry", ...registry);
+    debug("registry", ...registry);
     handleStatusIconChange();
 
     if (install(document)) {

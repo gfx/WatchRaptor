@@ -65,6 +65,20 @@ chrome.webNavigation.onCommitted.addListener((details) => {
   }
 });
 
+chrome.tabs.onCreated.addListener((tab) => {
+  const { id: tabId, url } = tab;
+  if (
+    tabId != null &&
+    url != null &&
+    manifest.host_permissions.some((urlPrefix) => url.startsWith(urlPrefix))
+  ) {
+    installScript({
+      tabId,
+      url,
+    });
+  }
+});
+
 chrome.runtime.onMessage.addListener((message, sender) => {
   console.log("message", message, sender);
 
