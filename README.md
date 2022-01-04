@@ -1,5 +1,7 @@
 # WatchRaptor
 
+dummy change
+
 WatchRaptor is a Chrome extension to watch GitHub CI statuses.
 
 ## Features
