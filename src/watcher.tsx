@@ -119,6 +119,7 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
 };
 
 const generation = Date.now().toString();
+let shutdown = false;
 
 const install = (document: Document): boolean => {
   let installed = false;
@@ -131,9 +132,21 @@ const install = (document: Document): boolean => {
       `.watchraptor-checkbox-container[data-watchraptor-id="${statusId}"]`
     );
     if (existingContainer) {
-      if (existingContainer.dataset.watchraptorGeneration === generation) {
+      const installedGeneration =
+        existingContainer.dataset.watchraptorGeneration ?? "0";
+      if (installedGeneration === generation) {
         continue;
       } else {
+        // A different generation of the script is installed.
+        if (
+          Number.parseInt(installedGeneration) > Number.parseInt(generation)
+        ) {
+          // the current one is older.
+          shutdown = true;
+          return false;
+        }
+
+        // the current one is newer.
         existingContainer.remove();
       }
     }
@@ -182,6 +195,12 @@ const main = (): void => {
 
   // The pull-request tab is being rendered.
   const observer = new MutationObserver((mutations) => {
+    if (shutdown) {
+      info(`shutting down (generation=${generation})`);
+      observer.disconnect();
+      return;
+    }
+
     debug("registry", ...registry);
     handleStatusIconChange();
 
