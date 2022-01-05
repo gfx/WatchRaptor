@@ -8,6 +8,8 @@ import { debug, info, warn } from "./log";
 
 type StatusType = "unknown" | "pending" | "success" | "fail";
 
+const containerClassName = "watchraptor-container";;
+
 const registry = new Map<string, StatusType>();
 
 const getStatus = (statusIcon: Element): StatusType => {
@@ -52,7 +54,7 @@ const getStatusIdFromItem = (statusItem: Element): string => {
   return statusItem.querySelector("div > strong")!.textContent!.trim();
 };
 
-const queryItem = (element: ParentNode, q: string): Element | null => {
+const queryStatusItem = (element: ParentNode, q: string): Element | null => {
   const separatorPos = q.indexOf(STATUS_ITEM_QUERY_SEPARATOR);
   const first = q.substring(0, separatorPos);
   const second = q.substring(separatorPos + 1);
@@ -64,9 +66,27 @@ const queryItem = (element: ParentNode, q: string): Element | null => {
   return null;
 };
 
+const findStatusItemByStatusId = (element: ParentNode, statusId: string): Element | null => {
+  for (const statusItem of element.querySelectorAll(".merge-status-list .merge-status-item")) {
+    if (getStatusIdFromItem(statusItem) === statusId) {
+      return statusItem;
+    }
+  }
+  return null;
+};
+
+const queryContainer = (
+  element: ParentNode,
+  statusId: string
+): HTMLElement | null => {
+  return document.body.querySelector<HTMLElement>(
+    `.${containerClassName}[data-watchraptor-id="${statusId}"]`
+  );
+};
+
 const handleStatusIconChange = () => {
   for (const [statusItemQuery, oldStatus] of registry) {
-    const statusItem = queryItem(document, statusItemQuery);
+    const statusItem = queryStatusItem(document, statusItemQuery);
     if (statusItem) {
       const statusIcon = statusItem.querySelector(".merge-status-icon");
       if (statusIcon) {
@@ -84,7 +104,7 @@ const handleStatusIconChange = () => {
 
 type WatchCheckboxProps = Readonly<{
   statusItemQuery: string;
-  statusIcon: HTMLElement;
+  statusIcon: Element;
 }>;
 
 const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
@@ -121,16 +141,56 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
 const generation = Date.now().toString();
 let shutdown = false;
 
+const intersectionObserver = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      const statusItem = entry.target as HTMLElement;
+      const statusId = getStatusIdFromItem(statusItem);
+      const container = queryContainer(document, statusId);
+      if (container) {
+        container.style.visibility = entry.isIntersecting
+          ? "visible"
+          : "hidden";
+        const { left, top } = statusItem.getBoundingClientRect();
+        container.style.left = `${Math.round(left + scrollX)}px`;
+        container.style.top = `${Math.round(top + scrollY)}px`;
+      }
+    }
+  },
+  { threshold: 0.7 }
+);
+
+const handleMergeStatusListScroll = (e: Event): void => {
+  for (const container of document.querySelectorAll<HTMLElement>(`.${containerClassName}`)) {
+    const statusId = container.dataset.watchraptorId!;
+    const statusItem = findStatusItemByStatusId(document, statusId);
+    if (statusItem) {
+      const { left, top } = statusItem.getBoundingClientRect();
+      container.style.left = `${Math.round(left + scrollX)}px`;
+      container.style.top = `${Math.round(top + scrollY)}px`;
+    }
+  }
+};
+
 const install = (document: Document): boolean => {
   let installed = false;
+
+  const mergeStatusList =
+    document.querySelector<HTMLElement>(".merge-status-list");
+  if (mergeStatusList) {
+    mergeStatusList.removeEventListener("scroll", handleMergeStatusListScroll);
+    mergeStatusList.addEventListener("scroll", handleMergeStatusListScroll);
+  }
 
   for (const statusItem of document.querySelectorAll(
     ".merge-status-list .merge-status-item"
   )) {
+    const statusIcon = statusItem.querySelector(".merge-status-icon");
+    if (statusIcon == null) {
+      continue;
+    }
     const statusId = getStatusIdFromItem(statusItem);
-    const existingContainer = document.body.querySelector<HTMLElement>(
-      `.watchraptor-checkbox-container[data-watchraptor-id="${statusId}"]`
-    );
+    const existingContainer = queryContainer(document, statusId);
     if (existingContainer) {
       const installedGeneration =
         existingContainer.dataset.watchraptorGeneration ?? "0";
@@ -152,21 +212,18 @@ const install = (document: Document): boolean => {
     }
 
     const container = document.createElement("div");
-    container.classList.add("watchraptor-checkbox-container");
+    container.classList.add(containerClassName);
 
     container.style.position = "absolute";
+    container.style.visibility = "hidden"; // will be updated in the intersection observer
 
     container.dataset.watchraptorGeneration = generation;
     container.dataset.watchraptorId = statusId;
 
     document.body.appendChild(container);
 
-    const rect = statusItem.getBoundingClientRect();
-    container.style.left = `${Math.round(rect.left + scrollX)}px`;
-    container.style.top = `${Math.round(rect.top + scrollY)}px`;
+    intersectionObserver.observe(statusItem);
 
-    const statusIcon =
-      statusItem.querySelector<HTMLElement>(".merge-status-icon")!;
     const statusItemQuery = [
       ".merge-status-list .merge-status-item",
       statusId,
@@ -193,11 +250,11 @@ const main = (): void => {
     info(`installed (generation=${generation})`);
   }
 
-  // The pull-request tab is being rendered.
-  const observer = new MutationObserver((mutations) => {
+  const mutationObserver = new MutationObserver((mutations) => {
     if (shutdown) {
       info(`shutting down (generation=${generation})`);
-      observer.disconnect();
+      mutationObserver.disconnect();
+      intersectionObserver.disconnect();
       return;
     }
 
@@ -205,13 +262,13 @@ const main = (): void => {
     handleStatusIconChange();
 
     if (install(document)) {
-      info(`installed (generation=${generation})`);
+      info(`installed in MutationObserver (generation=${generation})`);
     }
   });
-  observer.observe(document, {
+  mutationObserver.observe(document, {
     childList: true,
     subtree: true,
   });
 };
 
-main();
+requestAnimationFrame(main);
