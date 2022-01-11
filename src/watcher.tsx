@@ -92,6 +92,9 @@ const queryContainer = (
   );
 };
 
+// GitHub status item -> WatchRaptor UI container mapping
+const statusItemToContainer = new WeakMap<Element, HTMLElement>();
+
 const handleStatusIconChange = () => {
   for (const [statusItemQuery, oldStatus] of registry) {
     const statusItem = queryStatusItem(document, statusItemQuery);
@@ -210,7 +213,7 @@ const install = (document: Document): boolean => {
       continue;
     }
     const statusId = getStatusIdFromItem(statusItem);
-    const existingContainer = queryContainer(document, statusId);
+    const existingContainer = statusItemToContainer.get(statusItem);
     if (existingContainer) {
       const installedGeneration =
         existingContainer.dataset.watchraptorGeneration ?? "0";
@@ -242,6 +245,7 @@ const install = (document: Document): boolean => {
     container.dataset.watchraptorId = statusId;
 
     document.body.appendChild(container);
+    statusItemToContainer.set(statusItem, container);
 
     intersectionObserver.observe(statusItem);
 
