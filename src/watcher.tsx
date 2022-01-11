@@ -8,7 +8,7 @@ import { debug, info, warn } from "./log";
 
 type StatusType = "unknown" | "pending" | "success" | "fail";
 
-const containerClassName = "watchraptor-container";;
+const containerClassName = "watchraptor-container";
 
 const registry = new Map<string, StatusType>();
 
@@ -39,9 +39,12 @@ const notifyStatusChange = async (statusIcon: Element) => {
     )
     .trim();
 
+  const type = "ci-status-changed";
+  const documentTitle = document.title;
+
   chrome.runtime.sendMessage({
-    type: "ci-status-changed",
-    documentTitle: document.title,
+    type,
+    documentTitle,
     statusMessage,
     status,
   });
@@ -66,8 +69,13 @@ const queryStatusItem = (element: ParentNode, q: string): Element | null => {
   return null;
 };
 
-const findStatusItemByStatusId = (element: ParentNode, statusId: string): Element | null => {
-  for (const statusItem of element.querySelectorAll(".merge-status-list .merge-status-item")) {
+const findStatusItemByStatusId = (
+  element: ParentNode,
+  statusId: string
+): Element | null => {
+  for (const statusItem of element.querySelectorAll(
+    ".merge-status-list .merge-status-item"
+  )) {
     if (getStatusIdFromItem(statusItem) === statusId) {
       return statusItem;
     }
@@ -143,6 +151,11 @@ let shutdown = false;
 
 const intersectionObserver = new IntersectionObserver(
   (entries) => {
+    if (shutdown) {
+      intersectionObserver.disconnect();
+      return;
+    }
+
     for (const entry of entries) {
       const statusItem = entry.target as HTMLElement;
       const statusId = getStatusIdFromItem(statusItem);
@@ -161,7 +174,14 @@ const intersectionObserver = new IntersectionObserver(
 );
 
 const handleMergeStatusListScroll = (e: Event): void => {
-  for (const container of document.querySelectorAll<HTMLElement>(`.${containerClassName}`)) {
+  if (shutdown) {
+    e.target!.removeEventListener("scroll", handleMergeStatusListScroll);
+    return;
+  }
+
+  for (const container of document.querySelectorAll<HTMLElement>(
+    `.${containerClassName}`
+  )) {
     const statusId = container.dataset.watchraptorId!;
     const statusItem = findStatusItemByStatusId(document, statusId);
     if (statusItem) {
@@ -203,6 +223,7 @@ const install = (document: Document): boolean => {
         ) {
           // the current one is older.
           shutdown = true;
+          info(`shutting down (generation=${generation})`);
           return false;
         }
 
@@ -252,9 +273,7 @@ const main = (): void => {
 
   const mutationObserver = new MutationObserver((mutations) => {
     if (shutdown) {
-      info(`shutting down (generation=${generation})`);
       mutationObserver.disconnect();
-      intersectionObserver.disconnect();
       return;
     }
 
