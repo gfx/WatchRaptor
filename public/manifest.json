@@ -6,7 +6,10 @@
   "description": "Notify if a specified status check of GitHub PRs is completed",
   "author": "FUJI Goro",
 
-  "icons": {},
+  "icons": {
+    "48": "./assets/velociraptor48.png",
+    "128": "./assets/velociraptor128.png"
+  },
   "background": {
     "service_worker": "background.js"
   },

@@ -2,7 +2,7 @@
 import manifest from "../public/manifest.json";
 
 // @ts-expect-error
-import appIconUri from "../public/assets/velociraptor.png";
+import appIconUri from "../public/assets/velociraptor128.png";
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   console.log(`${manifest.name} is installed: ${reason}`);
