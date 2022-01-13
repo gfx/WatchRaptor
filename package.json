@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "prepublishOnly": "echo ; echo 'CAUTION: You cannot publish this package as an npm package. This is a Chrome extension.' ; echo ; exit 1",
-    "build:release": "webpack --mode=production --bail",
+    "build:release": "rm -rf dist/ && webpack --mode=production --bail",
     "build": "webpack --mode=development --bail --progress",
     "build:watch": "webpack --mode=development --progress --watch",
     "test": "tsc --noEmit"

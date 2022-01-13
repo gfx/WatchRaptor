@@ -19,7 +19,6 @@
   ],
   "permissions": [
     "scripting",
-    "alarms",
     "storage",
     "webNavigation",
     "notifications"
