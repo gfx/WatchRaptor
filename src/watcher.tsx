@@ -149,6 +149,18 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
   );
 };
 
+const adjustContainerPosition = ({
+  statusItem,
+  container,
+}: {
+  statusItem: Element;
+  container: HTMLElement;
+}): void => {
+  const { left, top } = statusItem.getBoundingClientRect();
+  container.style.left = `${Math.round(left + scrollX)}px`;
+  container.style.top = `${Math.round(top + scrollY)}px`;
+};
+
 const generation = Date.now().toString();
 let shutdown = false;
 
@@ -167,9 +179,7 @@ const intersectionObserver = new IntersectionObserver(
         container.style.visibility = entry.isIntersecting
           ? "visible"
           : "hidden";
-        const { left, top } = statusItem.getBoundingClientRect();
-        container.style.left = `${Math.round(left + scrollX)}px`;
-        container.style.top = `${Math.round(top + scrollY)}px`;
+        adjustContainerPosition({ statusItem, container });
       }
     }
   },
@@ -188,9 +198,7 @@ const handleMergeStatusListScroll = (e: Event): void => {
     const statusId = container.dataset.watchraptorId!;
     const statusItem = findStatusItemByStatusId(document, statusId);
     if (statusItem) {
-      const { left, top } = statusItem.getBoundingClientRect();
-      container.style.left = `${Math.round(left + scrollX)}px`;
-      container.style.top = `${Math.round(top + scrollY)}px`;
+      adjustContainerPosition({ statusItem, container });
     }
   }
 };
