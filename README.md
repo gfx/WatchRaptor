@@ -14,7 +14,7 @@ WatchRaptor is a Chrome extension to watch GitHub CI statuses.
 
 ## Install it via Chrome Web Store
 
-Not yet.
+Chrome Web Store: [WatchRaptor](https://chrome.google.com/webstore/detail/watchraptor/ijbgmfkhhjibpjgcjfnoobechckhnnie)
 
 ## Development
 
@@ -42,6 +42,10 @@ npm run build:release
 1. Open `chrome://extensions/`.
 2. Turns on "Developer mode".
 3. Click "Load unpacked" and then select the "dist/" dir in the repository.
+
+## Asset Licenses
+
+See [assets/README.md](assets/README.md) for details
 
 ## License
 
