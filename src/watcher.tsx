@@ -269,7 +269,7 @@ const install = (document: Document): boolean => {
 };
 
 const main = (): void => {
-  info(`installing (generation=${generation})`);
+  info(`injected (generation=${generation})`);
 
   if (install(document)) {
     info(`installed (generation=${generation})`);
