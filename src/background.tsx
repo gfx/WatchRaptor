@@ -11,8 +11,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 
 async function getGitHubPRsTabs(): Promise<ReadonlyArray<chrome.tabs.Tab>> {
   return await chrome.tabs.query({
-    status: "complete",
-    url: "https://github.com/*/*/pull/*",
+    url: manifest.host_permissions,
   });
 }
 
