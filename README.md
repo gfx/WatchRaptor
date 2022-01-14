@@ -45,7 +45,7 @@ npm run build:release
 
 ## Asset Licenses
 
-See [assets/README.md](assets/README.md) for details
+See [assets/README.md](./public/assets/README.md) for details
 
 ## License
 
