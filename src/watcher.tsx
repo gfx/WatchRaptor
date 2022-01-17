@@ -85,10 +85,10 @@ const findStatusItemByStatusId = (
 };
 
 const queryContainer = (
-  element: ParentNode,
+  target: ParentNode,
   statusId: string
 ): HTMLElement | null => {
-  return document.body.querySelector<HTMLElement>(
+  return target.querySelector<HTMLElement>(
     `.${containerClassName}[data-watchraptor-id="${statusId}"]`
   );
 };
@@ -189,19 +189,13 @@ const intersectionObserver = new IntersectionObserver(
         container.style.visibility = entry.isIntersecting
           ? "visible"
           : "hidden";
-        adjustContainerPosition({ statusItem, container });
       }
     }
   },
   { threshold: 0.7 }
 );
 
-const handleMergeStatusListScroll = (e: Event): void => {
-  if (shutdown) {
-    e.target!.removeEventListener("scroll", handleMergeStatusListScroll);
-    return;
-  }
-
+const adjustContainerPositionAll = () => {
   for (const container of document.querySelectorAll<HTMLElement>(
     `.${containerClassName}`
   )) {
@@ -211,6 +205,15 @@ const handleMergeStatusListScroll = (e: Event): void => {
       adjustContainerPosition({ statusItem, container });
     }
   }
+};
+
+const handleMergeStatusListScroll = (e: Event): void => {
+  if (shutdown) {
+    e.target!.removeEventListener("scroll", handleMergeStatusListScroll);
+    return;
+  }
+
+  adjustContainerPositionAll();
 };
 
 const install = (document: Document): boolean => {
@@ -300,6 +303,7 @@ const main = (): void => {
     }
 
     handleStatusIconChange();
+    adjustContainerPositionAll();
 
     if (install(document)) {
       info(`installed in MutationObserver (generation=${generation})`);
