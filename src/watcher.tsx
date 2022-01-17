@@ -146,7 +146,10 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
   }, []);
 
   return (
-    <div>
+    <div style={{
+      display: "flex",
+      padding: "2px",
+    }}>
       <input
         type="checkbox"
         checked={checked}
