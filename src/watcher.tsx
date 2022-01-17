@@ -125,23 +125,25 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
   statusItemQuery,
   statusIcon,
 }) => {
-  const [initialized, setInitialized] = useState(false);
+  const [disabled, setDisabled] = useState(true);
   const [checked, setChecked] = useState(false);
   const status = getStatus(statusIcon);
 
   const updateChecked = async (checked: boolean) => {
     setChecked(checked);
+    setDisabled(true);
     if (checked) {
       await registry.set(statusItemQuery, status);
     } else {
       await registry.delete(statusItemQuery);
     }
+    setDisabled(false);
   };
 
   useEffect(() => {
     (async () => {
       await updateChecked(await registry.has(statusItemQuery));
-      setInitialized(true);
+      setDisabled(false);
     })().catch((e) => warn(e));
   }, []);
 
@@ -153,9 +155,13 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
       <input
         type="checkbox"
         checked={checked}
-        disabled={!initialized}
+        disabled={disabled}
         onChange={() => {
-          updateChecked(!checked).catch((e) => warn(e));
+          (async () => {
+            setDisabled(true);
+            updateChecked(!checked);
+            setDisabled(false);
+          })().catch((e) => warn(e));
         }}
       />
     </div>
