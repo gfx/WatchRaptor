@@ -1,11 +1,14 @@
 // This is the background worker that installs watcher.tsx to each GitHub PR page.
 import manifest from "../public/manifest.json";
+import { info, warn } from "./log";
 
 // @ts-expect-error
 import appIconUri from "../public/assets/velociraptor128.png";
 
+// chrome.storage.local.clear();
+
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  console.log(`${manifest.name} is installed: ${reason}`);
+  info(`installed (reason=${reason})`);
   await installScriptToAllTabs();
 });
 
@@ -16,7 +19,7 @@ async function getGitHubPRsTabs(): Promise<ReadonlyArray<chrome.tabs.Tab>> {
 }
 
 async function installScript({ url, tabId }: { url: string; tabId: number }) {
-  console.log(`installing ${manifest.name} to ${url}`);
+  info(`installScript: ${url}`);
 
   await chrome.scripting.executeScript({
     target: { tabId },
@@ -78,8 +81,8 @@ chrome.tabs.onCreated.addListener((tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-  console.log("message", message, sender);
+chrome.runtime.onMessage.addListener((message, sender, callback) => {
+  info("message", message, sender);
 
   if (message.type === "ci-status-changed") {
     const sym = ((status: string) => {
@@ -96,14 +99,34 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
     const tabId = sender.tab!.id!;
     const notificationId = `notification-${tabId}`;
-    chrome.notifications.create(notificationId, {
-      type: "basic",
-      title: `${sym} ${message.statusMessage}`,
-      message: message.documentTitle,
-      iconUrl: appIconUri,
-      requireInteraction: true,
+    chrome.notifications.create(
+      notificationId,
+      {
+        type: "basic",
+        title: `${sym} ${message.statusMessage}`,
+        message: message.documentTitle,
+        iconUrl: appIconUri,
+        requireInteraction: true,
+      },
+      () => {
+        callback();
+      }
+    );
+  } else if (message.type === "get-registry-items") {
+    chrome.storage.local.get().then((items) => {
+      callback(items);
     });
+  } else if (message.type === "set-registry-items") {
+    chrome.storage.local
+      .set(message.items)
+      .then(() => {
+        callback();
+      });
+  } else {
+    warn("unknown message", message);
   }
+
+  return true;
 });
 
 chrome.notifications.onClicked.addListener(async (id) => {

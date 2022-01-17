@@ -1,16 +1,17 @@
 /// <reference lib="dom" />
 /// <reference lib="dom.iterable" />
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
 import { debug, info, warn } from "./log";
+import { Registry } from "./registry";
 
 type StatusType = "unknown" | "pending" | "success" | "fail";
 
 const containerClassName = "watchraptor-container";
 
-const registry = new Map<string, StatusType>();
+const registry = new Registry<StatusType>();
 
 const getStatus = (statusIcon: Element): StatusType => {
   const svg = statusIcon.querySelector("svg")!;
@@ -96,21 +97,23 @@ const queryContainer = (
 const statusItemToContainer = new WeakMap<Element, HTMLElement>();
 
 const handleStatusIconChange = () => {
-  for (const [statusItemQuery, oldStatus] of registry) {
-    const statusItem = queryStatusItem(document, statusItemQuery);
-    if (statusItem) {
-      const statusIcon = statusItem.querySelector(".merge-status-icon");
-      if (statusIcon) {
-        const newStatus = getStatus(statusIcon);
-        registry.set(statusItemQuery, newStatus);
+  (async () => {
+    for await (const [statusItemQuery, oldStatus] of registry) {
+      const statusItem = queryStatusItem(document, statusItemQuery);
+      if (statusItem) {
+        const statusIcon = statusItem.querySelector(".merge-status-icon");
+        if (statusIcon) {
+          const newStatus = getStatus(statusIcon);
+          await registry.set(statusItemQuery, newStatus);
 
-        if (oldStatus !== newStatus && newStatus !== "pending") {
-          debug(`${statusItemQuery}: ${oldStatus} -> ${newStatus}`);
-          notifyStatusChange(statusIcon);
+          if (oldStatus !== newStatus && newStatus !== "pending") {
+            debug(`${statusItemQuery}: ${oldStatus} -> ${newStatus}`);
+            notifyStatusChange(statusIcon);
+          }
         }
       }
     }
-  }
+  })();
 };
 
 type WatchCheckboxProps = Readonly<{
@@ -122,27 +125,34 @@ const WatchCheckbox: React.FC<WatchCheckboxProps> = ({
   statusItemQuery,
   statusIcon,
 }) => {
-  const [checked, setChecked] = useState(registry.has(statusItemQuery));
+  const [initialized, setInitialized] = useState(false);
+  const [checked, setChecked] = useState(false);
   const status = getStatus(statusIcon);
 
-  const register = (checked: boolean) => {
+  const updateChecked = async (checked: boolean) => {
+    setChecked(checked);
     if (checked) {
-      registry.set(statusItemQuery, status);
+      await registry.set(statusItemQuery, status);
     } else {
-      registry.delete(statusItemQuery);
+      await registry.delete(statusItemQuery);
     }
   };
 
-  register(checked);
+  useEffect(() => {
+    (async () => {
+      await updateChecked(await registry.has(statusItemQuery));
+      setInitialized(true);
+    })().catch((e) => warn(e));
+  }, []);
 
   return (
     <div>
       <input
         type="checkbox"
         checked={checked}
+        disabled={!initialized}
         onChange={() => {
-          setChecked(!checked);
-          register(checked);
+          updateChecked(!checked).catch((e) => warn(e));
         }}
       />
     </div>
@@ -289,7 +299,6 @@ const main = (): void => {
       return;
     }
 
-    debug("registry", ...registry);
     handleStatusIconChange();
 
     if (install(document)) {
