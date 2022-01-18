@@ -113,12 +113,23 @@ chrome.runtime.onMessage.addListener((message, sender, callback) => {
       }
     );
   } else if (message.type === "get-registry-items") {
-    chrome.storage.local.get().then((items) => {
-      callback(items);
+    const senderTabId = sender!.tab!.id;
+    if (!senderTabId) {
+      throw new Error("sender.tab.id is null");
+    }
+    chrome.storage.local.get(`${senderTabId}`).then((root) => {
+      console.log("get-items", root);
+      callback(root[`${senderTabId}`] ?? {});
     });
   } else if (message.type === "set-registry-items") {
+    const senderTabId = sender!.tab!.id;
+    if (!senderTabId) {
+      throw new Error("sender.tab.id is null");
+    }
     chrome.storage.local
-      .set(message.items)
+      .set({
+        [`${senderTabId}`]: message.items,
+      })
       .then(() => {
         callback();
       });
