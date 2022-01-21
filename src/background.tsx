@@ -45,6 +45,7 @@ async function installScriptToAllTabs() {
 }
 
 chrome.webNavigation.onCommitted.addListener((details) => {
+  debug("chrome.webNavigation.onCommitted:", details);
   if (!details.url) {
     return;
   }
@@ -82,7 +83,7 @@ chrome.tabs.onCreated.addListener((tab) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, callback) => {
-  debug("message", message, sender);
+  debug("chrome.runtime.onMessage:", message, sender);
 
   if (message.type === "ci-status-changed") {
     const sym = ((status: string) => {
