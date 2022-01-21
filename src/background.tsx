@@ -44,43 +44,29 @@ async function installScriptToAllTabs() {
   }
 }
 
-chrome.webNavigation.onCommitted.addListener((details) => {
-  debug("chrome.webNavigation.onCommitted:", details);
-  if (!details.url) {
-    return;
-  }
+chrome.webNavigation.onCommitted.addListener(
+  (details) => {
+    debug("chrome.webNavigation.onCommitted:", details);
+    if (
+      ["reload", "link", "typed", "generated"].includes(details.transitionType)
+    ) {
+      const onComplete = () => {
+        installScript({
+          tabId: details.tabId!,
+          url: details.url!,
+        });
+        chrome.webNavigation.onCompleted.removeListener(onComplete);
+      };
 
-  if (
-    ["reload", "link", "typed", "generated"].includes(details.transitionType) &&
-    manifest.host_permissions.some((urlPrefix) =>
-      details.url.startsWith(urlPrefix)
-    )
-  ) {
-    const onComplete = () => {
-      installScript({
-        tabId: details.tabId!,
-        url: details.url!,
-      });
-      chrome.webNavigation.onCompleted.removeListener(onComplete);
-    };
-
-    chrome.webNavigation.onCompleted.addListener(onComplete);
+      chrome.webNavigation.onCompleted.addListener(onComplete);
+    }
+  },
+  {
+    url: manifest.host_permissions.map((urlPrefix) => {
+      return { urlPrefix };
+    }),
   }
-});
-
-chrome.tabs.onCreated.addListener((tab) => {
-  const { id: tabId, url } = tab;
-  if (
-    tabId != null &&
-    url != null &&
-    manifest.host_permissions.some((urlPrefix) => url.startsWith(urlPrefix))
-  ) {
-    installScript({
-      tabId,
-      url,
-    });
-  }
-});
+);
 
 chrome.runtime.onMessage.addListener((message, sender, callback) => {
   debug("chrome.runtime.onMessage:", message, sender);
