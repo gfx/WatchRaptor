@@ -1,6 +1,6 @@
 // This is the background worker that installs watcher.tsx to each GitHub PR page.
 import manifest from "../public/manifest.json";
-import { info, warn } from "./log";
+import { debug, info, warn } from "./log";
 
 // @ts-expect-error
 import appIconUri from "../public/assets/velociraptor128.png";
@@ -82,7 +82,7 @@ chrome.tabs.onCreated.addListener((tab) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, callback) => {
-  info("message", message, sender);
+  debug("message", message, sender);
 
   if (message.type === "ci-status-changed") {
     const sym = ((status: string) => {
@@ -118,7 +118,6 @@ chrome.runtime.onMessage.addListener((message, sender, callback) => {
       throw new Error("sender.tab.id is null");
     }
     chrome.storage.local.get(`${senderTabId}`).then((root) => {
-      console.log("get-items", root);
       callback(root[`${senderTabId}`] ?? {});
     });
   } else if (message.type === "set-registry-items") {
