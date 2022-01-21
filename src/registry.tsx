@@ -39,7 +39,7 @@ export class Registry<V extends string> {
     return this.setItems(items);
   }
 
-  async *[Symbol.asyncIterator](): AsyncIterator<[string, V], void, void> {
+  async *[Symbol.asyncIterator](): AsyncIterator<readonly [string, V], void, void> {
     const items = await this.getItems();
     for (const entry of Object.entries(items)) {
       yield entry as [string, V];

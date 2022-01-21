@@ -7,7 +7,9 @@ export function debug(message: string, ...args: ReadonlyArray<unknown>) {
 }
 
 export function info(message: string, ...args: ReadonlyArray<unknown>) {
-    console.info(`[${manifest.name}] ${message}`, ...args);
+    if (process.env.NODE_ENV !== "production") {
+        console.info(`[${manifest.name}] ${message}`, ...args);
+    }
 }
 
 export function warn(message: string, ...args: ReadonlyArray<unknown>) {
