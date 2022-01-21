@@ -48,7 +48,7 @@ chrome.webNavigation.onCommitted.addListener(
   (details) => {
     debug("chrome.webNavigation.onCommitted:", details);
     if (
-      ["reload", "link", "typed", "generated"].includes(details.transitionType)
+      ["reload", "link", "typed", "generated", "auto_bookmark"].includes(details.transitionType)
     ) {
       const onComplete = () => {
         installScript({
