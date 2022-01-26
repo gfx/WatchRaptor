@@ -2,7 +2,9 @@
 
 <div style="text-align: center"><img src="./public/assets/velociraptor128.png" width="128" height="128"></div>
 
-WatchRaptor is a Chrome extension to watch GitHub CI statuses.
+WatchRaptor is a Chrome extension to watch GitHub CI statuses and makes desktop notifications for their completions.
+
+It is not difficult to set up Slack notifications (or other notifications) in a CI workflow. However, it would be annoying if you had to maintain every CI workflow with the integration of a suitable notification platform. On the other hand, this extension can watch any CI statuses as long as it is placed on GitHub.
 
 ## Features
 
