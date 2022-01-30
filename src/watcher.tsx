@@ -238,6 +238,10 @@ const install = (document: Document): boolean => {
   for (const statusItem of document.querySelectorAll(
     ".merge-status-list .merge-status-item"
   )) {
+    if (statusItem.querySelector(".avatar") == null) {
+      // skip if the status item has not an avatar, or an icon for the workflow.
+      continue;
+    }
     const statusIcon = statusItem.querySelector(".merge-status-icon");
     if (statusIcon == null) {
       continue;
