@@ -14,7 +14,9 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 
 async function getGitHubPRsTabs(): Promise<ReadonlyArray<chrome.tabs.Tab>> {
   return await chrome.tabs.query({
-    url: manifest.host_permissions,
+    url: manifest.host_permissions.map((url) => {
+      return `${url}*`;
+    }),
   });
 }
 
@@ -29,18 +31,12 @@ async function installScript({ url, tabId }: { url: string; tabId: number }) {
 
 async function installScriptToAllTabs() {
   for (const tab of await getGitHubPRsTabs()) {
-    if (!tab.url) {
-      continue;
+    if (tab.url) {
+      installScript({
+        tabId: tab.id!,
+        url: tab.url,
+      });
     }
-    const url = new URL(tab.url);
-    if (!/\/pull\/\d+$/.test(url.pathname)) {
-      continue;
-    }
-
-    installScript({
-      tabId: tab.id!,
-      url: tab.url,
-    });
   }
 }
 
@@ -48,7 +44,9 @@ chrome.webNavigation.onCommitted.addListener(
   (details) => {
     debug("chrome.webNavigation.onCommitted:", details);
     if (
-      ["reload", "link", "typed", "generated", "auto_bookmark"].includes(details.transitionType)
+      ["reload", "link", "typed", "generated", "auto_bookmark"].includes(
+        details.transitionType
+      )
     ) {
       const onComplete = () => {
         installScript({
